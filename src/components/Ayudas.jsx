@@ -97,7 +97,7 @@ export default function Ayudas() {
             <div className="progress"><i style={{ width: `${(hechos / docs.length) * 100}%` }} /></div></div>
         </div>
         <div className="actions center-row">
-          <button onClick={() => siguiente()}>Siguiente convocatoria</button>
+          <button onClick={() => siguiente(cola.length)}>Siguiente convocatoria</button>
           <button className="primary" onClick={() => { setTab('seguimiento'); setVista('lista') }}>Ir al seguimiento</button>
         </div>
       </section>
