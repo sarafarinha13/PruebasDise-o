@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Verdict, Example } from './components/Badge.jsx'
+import Ayudas from './components/Ayudas.jsx'
 
 const TABS = ['Ayudas', 'Empresas', 'Propuestas']
 
@@ -33,7 +34,7 @@ export default function App() {
         <button className={tab === 'Perfil' ? 'active' : ''} onClick={() => setTab('Perfil')} aria-label="Perfil">⚙️</button>
       </header>
       <main>
-        <Section title={tab} question={QUESTIONS[tab]} />
+        {tab === 'Ayudas' ? <Ayudas /> : <Section title={tab} question={QUESTIONS[tab]} />}
         <div className="legend">
           <Verdict kind="presenta" /> <Verdict kind="mira" /> <Verdict kind="descarta" />
           <Verdict kind="encaja" /> <Verdict kind="quiza" /> <Verdict kind="noencaja" />
