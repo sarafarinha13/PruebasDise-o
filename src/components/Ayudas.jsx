@@ -38,6 +38,7 @@ export default function Ayudas() {
       <span className="pill">Radar de Reforesta</span>
       <h1>Más financiación para reforestar más monte</h1>
       <p>El radar lee las convocatorias por ti y te dice cuáles merece la pena presentar.</p>
+      {items.every(a => a.revisada) && <p className="note">Nada nuevo desde ayer. Última revisión 07:00.</p>}
       <div className="grid3">
         <div className="card"><small>PARA PRESENTAR</small><big>{paraPresentar}</big><small>Encajan con reforestar</small></div>
         <div className="card"><small>SOLICITUDES 2026</small><big>{items.filter(a => a.estado === 'seguimiento').length} <span>de 10</span></big><small>Objetivo del año <Example /></small></div>

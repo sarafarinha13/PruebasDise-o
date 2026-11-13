@@ -65,3 +65,4 @@ label { display:flex; gap:.5rem; align-items:center; }
 .list li.row { grid-template-columns:auto 1fr auto auto; align-items:center; gap:1rem; cursor:default; }
 .list li.row div { display:grid; } select { font:inherit; padding:.4rem .7rem; border-radius:999px; border:1px solid var(--line); background:#fff; }
 input,textarea { font:inherit; padding:.7rem 1rem; border-radius:14px; border:1px solid var(--line); background:#f3f6f1; width:100%; }
+.banner { background:#fef3c7; color:#92400e; border-radius:16px; padding:.75rem 1rem; margin-bottom:1rem; display:flex; gap:1rem; align-items:center; justify-content:space-between; }
