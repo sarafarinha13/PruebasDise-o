@@ -1,5 +1,6 @@
 {
   "name": "pruebasdise-o",
   "compatibility_date": "2026-11-01",
+  "build": { "command": "npm run build" },
   "assets": { "directory": "./dist" }
 }
