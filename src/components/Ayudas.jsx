@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AYUDAS } from '../data/ayudas.js'
 import { Verdict, Example } from './Badge.jsx'
+import Seguimiento from './Seguimiento.jsx'
 
 const ICON = { ok: '✓', duda: '?', no: '✕' }
 const MOTIVOS = ['No encaja con reforestar', 'No podemos pedirla (requisitos)', 'Plazo o importe no compensa', 'Otro motivo']
@@ -132,7 +133,7 @@ export default function Ayudas() {
     <div>
       <div className="stats"><h1>Ayudas</h1><button onClick={() => setVista('inicio')}>Inicio</button><button className="primary" onClick={empezar}>Empezar revisión</button></div>
       <div className="tabs">{TABS.map(([k, l]) => <button key={k} className={k === tab ? 'active' : ''} onClick={() => { setTab(k); setSelId(null) }}>{l} · {items.filter(a => a.estado === k).length}</button>)}</div>
-      <div className="split">
+      {tab === 'seguimiento' ? <Seguimiento items={items} setItems={setItems} /> : <div className="split">
         <ul className="list">
           {lista.length === 0 && <li className="empty">Nada en esta pestaña.</li>}
           {lista.map(a => (
@@ -148,7 +149,7 @@ export default function Ayudas() {
             <ul className="reqs">{sel.requisitos.map(([t, s]) => <li key={t}><b className={s}>{ICON[s]}</b> {t}</li>)}</ul>
           </aside>
         )}
-      </div>
+      </div>}
     </div>
   )
 }
