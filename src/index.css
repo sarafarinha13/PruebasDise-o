@@ -62,3 +62,5 @@ label { display:flex; gap:.5rem; align-items:center; }
 .note { color:#6b7280; font-size:.85rem; text-align:right; margin:0 0 .5rem; }
 .col { display:grid; gap:.75rem; align-content:start; } .mini { display:grid; gap:.4rem; background:#f3f6f1; border-radius:16px; padding:.75rem; }
 .timeline { margin-top:1rem; } .chip.done { background:var(--green-soft); color:var(--green); font-weight:600; }
+.list li.row { grid-template-columns:auto 1fr auto auto; align-items:center; gap:1rem; cursor:default; }
+.list li.row div { display:grid; } select { font:inherit; padding:.4rem .7rem; border-radius:999px; border:1px solid var(--line); background:#fff; }
