@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Verdict, Example } from './components/Badge.jsx'
 import Ayudas from './components/Ayudas.jsx'
 import Empresas from './components/Empresas.jsx'
+import Propuestas from './components/Propuestas.jsx'
+import PaginaPublica from './components/PaginaPublica.jsx'
 
 const TABS = ['Ayudas', 'Empresas', 'Propuestas']
 
@@ -23,6 +25,9 @@ const QUESTIONS = {
 
 export default function App() {
   const [tab, setTab] = useState('Ayudas')
+  const [publica, setPublica] = useState(location.hash === '#/propuestas')
+  useEffect(() => { const f = () => setPublica(location.hash === '#/propuestas'); addEventListener('hashchange', f); return () => removeEventListener('hashchange', f) }, [])
+  if (publica) return <PaginaPublica />
   return (
     <div className="app">
       <header>
@@ -35,7 +40,7 @@ export default function App() {
         <button className={tab === 'Perfil' ? 'active' : ''} onClick={() => setTab('Perfil')} aria-label="Perfil">⚙️</button>
       </header>
       <main>
-        {tab === 'Ayudas' ? <Ayudas /> : tab === 'Empresas' ? <Empresas /> : <Section title={tab} question={QUESTIONS[tab]} />}
+        {tab === 'Ayudas' ? <Ayudas /> : tab === 'Empresas' ? <Empresas /> : tab === 'Propuestas' ? <Propuestas /> : <Section title={tab} question={QUESTIONS[tab]} />}
         <div className="legend">
           <Verdict kind="presenta" /> <Verdict kind="mira" /> <Verdict kind="descarta" />
           <Verdict kind="encaja" /> <Verdict kind="quiza" /> <Verdict kind="noencaja" />

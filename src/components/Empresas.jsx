@@ -16,7 +16,7 @@ export default function Empresas() {
   const vista = items.filter(pasa)
   const cuenta = k => items.filter(e => (k === 'todas' ? true : k === 'encaja' ? e.veredicto === 'encaja' : k === 'sin' ? e.contacto === 'sin contactar' : e.rsc)).length
   const upd = (id, c) => setItems(items.map(e => (e.id === id ? { ...e, ...c } : e)))
-  const copiar = () => navigator.clipboard?.writeText(location.origin + '/propuestas').catch(() => {})
+  const copiar = () => navigator.clipboard?.writeText(location.origin + location.pathname + '#/propuestas').catch(() => {})
 
   if (modo === 'uno') {
     const e = vista[idx]
