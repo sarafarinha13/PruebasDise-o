@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Verdict, Example } from './components/Badge.jsx'
+import Leaf from './components/Leaf.jsx'
+import { Example } from './components/Badge.jsx'
 import Ayudas from './components/Ayudas.jsx'
 import Empresas from './components/Empresas.jsx'
 import Perfil from './components/Perfil.jsx'
@@ -34,22 +35,17 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <strong className="logo">🌱 Radar de Reforesta</strong>
+        <span className="logo"><Leaf /><b>REFORESTA</b></span>
         <nav>
           {TABS.map(t => (
             <button key={t} className={t === tab ? 'active' : ''} onClick={() => setTab(t)}>{t}</button>
           ))}
         </nav>
-        <button className={tab === 'Perfil' ? 'active' : ''} onClick={() => setTab('Perfil')} aria-label="Perfil">⚙️</button>
+        <button className={`perfil ${tab === 'Perfil' ? 'active' : ''}`} onClick={() => setTab('Perfil')}>Perfil</button>
       </header>
       <main>
         {fuenteCaida && <Banner onRetry={() => setFuenteCaida(false)}>La BDNS no responde. Datos de la última actualización: ayer a las 07:00.</Banner>}
         {tab === 'Ayudas' ? <Ayudas /> : tab === 'Empresas' ? <Empresas /> : tab === 'Propuestas' ? <Propuestas /> : tab === 'Perfil' ? <Perfil /> : <Section title={tab} question={QUESTIONS[tab]} />}
-        <div className="legend">
-          <Verdict kind="presenta" /> <Verdict kind="mira" /> <Verdict kind="descarta" />
-          <Verdict kind="encaja" /> <Verdict kind="quiza" /> <Verdict kind="noencaja" />
-          <Verdict kind="sinleer" />
-        </div>
       </main>
     </div>
   )

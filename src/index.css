@@ -66,3 +66,53 @@ label { display:flex; gap:.5rem; align-items:center; }
 .list li.row div { display:grid; } select { font:inherit; padding:.4rem .7rem; border-radius:999px; border:1px solid var(--line); background:#fff; }
 input,textarea { font:inherit; padding:.7rem 1rem; border-radius:14px; border:1px solid var(--line); background:#f3f6f1; width:100%; }
 .banner { background:#fef3c7; color:#92400e; border-radius:16px; padding:.75rem 1rem; margin-bottom:1rem; display:flex; gap:1rem; align-items:center; justify-content:space-between; }
+
+/* ===== Estilo "Valle": paisaje difuminado, tarjetas blancas, títulos finos ===== */
+:root { --forest:#1f3a1d; --wine:#8a2f36; --leaf:#3f7a2c; --sand:#e9dcc3; --mute:#6b7566; --line:rgba(30,50,35,.1); --text:#1f3a1d; --bg:#f4f6ef; }
+body { background:var(--bg); color:var(--forest); font-weight:400; -webkit-font-smoothing:antialiased; }
+header { background:#fff; backdrop-filter:none; border-bottom:1px solid var(--line); padding:.75rem 1.75rem; flex-wrap:nowrap; position:sticky; top:0; z-index:5; }
+.logo { display:flex; align-items:center; gap:.5rem; } .logo b { letter-spacing:.2em; font-size:.85rem; color:var(--forest); }
+nav { flex:none; margin:0 auto; background:rgba(0,0,0,.05); border-radius:999px; padding:3px; gap:2px; }
+nav button, .perfil { font-weight:600; font-size:.85rem; color:var(--mute); }
+button.active, nav button.active { background:var(--forest); color:#fff; }
+.perfil { padding:.4rem .8rem; } .perfil.active { background:var(--forest); color:#fff; }
+main { max-width:1040px; padding:0 1.75rem; }
+h1, h2 { font-weight:300; letter-spacing:-.035em; }
+.card { border:1.5px solid var(--line); border-radius:20px; box-shadow:none; }
+button:not(.active):hover { background:rgba(63,122,44,.1); }
+.actions .primary, .primary { background:var(--forest); color:#fff; } .actions .primary:hover, .primary:hover { background:#2d5229; }
+.actions button, .tabs button, .stats button { border-color:var(--line); }
+.tabs { background:rgba(0,0,0,.05); border-radius:999px; padding:3px; width:max-content; max-width:100%; flex-wrap:wrap; gap:2px; }
+.tabs button { border-color:transparent; font-weight:600; font-size:.8rem; color:var(--mute); } .tabs button.active { background:#fff; color:var(--forest); box-shadow:0 2px 6px rgba(0,0,0,.1); }
+.stats h1 { font-size:2rem; margin:0; margin-right:auto; }
+.badge.green { background:#e3efd7; color:#2d5a1c; } .badge.red { background:#f1d3d5; color:var(--wine); } .badge.amber { background:var(--sand); color:#6b4b10; }
+.callout { background:#e8f1dc; } blockquote { border-left-color:var(--wine); }
+.progress i { background:var(--leaf); }
+.big-card h1, .center h1 { font-weight:300; }
+.nums big, .grid3 big, big { font-weight:300; letter-spacing:-.04em; }
+.bar .primary, .motivos button, .bar button { border-radius:999px; }
+.pill, .tag { display:inline-block; font-size:.72rem; padding:.3rem .8rem; border-radius:999px; background:rgba(255,255,255,.75); color:var(--forest); font-weight:600; }
+.chip2 { font-size:.8rem; font-weight:600; background:var(--sand); padding:.25rem .65rem; border-radius:999px; align-self:center; }
+
+/* portada con paisaje */
+.hero { position:relative; border-radius:22px; overflow:hidden; min-height:320px; display:flex; align-items:flex-end; padding:1.75rem; color:#fff; margin-bottom:1.25rem; }
+.hero::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(18,42,24,.62),rgba(18,42,24,.2) 60%,transparent); }
+.hero-bg { position:absolute; inset:0; width:100%; height:100%; display:block; }
+.hero-text { position:relative; z-index:2; max-width:430px; }
+.hero-text h1 { font-size:3rem; line-height:1; margin:.6rem 0; color:#fff; max-width:none; } .hero-text p { margin:0 0 1rem; opacity:.92; font-size:.95rem; }
+.hero .actions .primary { background:var(--forest); } .glass { background:rgba(255,255,255,.35); color:#fff; backdrop-filter:blur(10px); }
+.glass-stats { position:absolute; z-index:2; right:1.5rem; bottom:1.5rem; display:flex; gap:.6rem; }
+.glass-stats > div { background:rgba(255,255,255,.6); backdrop-filter:blur(14px); border-radius:18px; padding:.8rem 1rem; color:var(--forest); min-width:104px; }
+.glass-stats b { display:block; font-size:2rem; font-weight:300; letter-spacing:-.04em; line-height:1; } .glass-stats em { font-size:1rem; font-style:normal; } .glass-stats small { color:var(--forest); opacity:.75; }
+.hero.pub { min-height:240px; align-items:center; justify-content:center; width:100%; }
+@media (max-width:800px) { .glass-stats { position:relative; right:auto; bottom:auto; margin-top:1rem; flex-wrap:wrap; } .hero { flex-direction:column; align-items:flex-start; } .hero-text h1 { font-size:2.2rem; } }
+.sec { font-size:.95rem; margin:1.25rem 0 .6rem; }
+.list.two { grid-template-columns:1fr 1fr; } @media (max-width:700px) { .list.two { grid-template-columns:1fr; } }
+
+/* filas con miniatura de paisaje */
+.list li.thumbrow { display:flex; align-items:center; gap:.85rem; padding:.7rem; border:1.5px solid var(--line); border-radius:18px; }
+.list li.thumbrow > div { flex:1; display:grid; gap:.15rem; } .list li.thumbrow.sel { border-color:var(--forest); }
+.thumb { width:64px; height:64px; border-radius:14px; flex:none; display:block; } .cardimg { width:100%; height:100px; border-radius:14px; display:block; margin-bottom:.4rem; }
+.card.left .btn, .card.left button { margin-top:.4rem; }
+.list li.thumbrow .badge { justify-self:start; }
+.card.left > button { border:1px solid var(--line); background:#f1efe6; border-radius:999px; font-weight:600; }

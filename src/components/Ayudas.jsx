@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AYUDAS } from '../data/ayudas.js'
 import { Verdict, Example } from './Badge.jsx'
 import Seguimiento from './Seguimiento.jsx'
+import Landscape from './Landscape.jsx'
 
 const ICON = { ok: '✓', duda: '?', no: '✕' }
 const MOTIVOS = ['No encaja con reforestar', 'No podemos pedirla (requisitos)', 'Plazo o importe no compensa', 'Otro motivo']
@@ -34,20 +35,34 @@ export default function Ayudas() {
   }
 
   if (vista === 'inicio') return (
-    <section className="center">
-      <span className="pill">Radar de Reforesta</span>
-      <h1>Más financiación para reforestar más monte</h1>
-      <p>El radar lee las convocatorias por ti y te dice cuáles merece la pena presentar.</p>
-      {items.every(a => a.revisada) && <p className="note">Nada nuevo desde ayer. Última revisión 07:00.</p>}
-      <div className="grid3">
-        <div className="card"><small>PARA PRESENTAR</small><big>{paraPresentar}</big><small>Encajan con reforestar</small></div>
-        <div className="card"><small>SOLICITUDES 2026</small><big>{items.filter(a => a.estado === 'seguimiento').length} <span>de 10</span></big><small>Objetivo del año <Example /></small></div>
-        <div className="card"><small>PLAZO MÁS PRÓXIMO</small><big>{proxima ? dias(proxima.plazo) + ' d' : '—'}</big><small>{proxima?.titulo}</small></div>
+    <section>
+      <div className="hero">
+        <Landscape seed={3} className="hero-bg" />
+        <div className="hero-text">
+          <span className="tag">Radar de Reforesta · Madrid</span>
+          <h1>Más monte,<br />más vida</h1>
+          <p>Lee las convocatorias por ti y te dice cuáles merece la pena presentar.</p>
+          <div className="actions">
+            <button className="primary" onClick={empezar}>Empezar revisión ↗</button>
+            <button className="glass" onClick={() => setVista('lista')}>Ver lista</button>
+          </div>
+        </div>
+        <div className="glass-stats">
+          <div><b>{paraPresentar}</b><small>para presentar</small></div>
+          <div><b>{proxima ? dias(proxima.plazo) + ' d' : '—'}</b><small>plazo más próximo</small></div>
+          <div><b>{items.filter(a => a.estado === 'seguimiento').length}<em>/10</em></b><small>solicitudes 2026 · ejemplo</small></div>
+        </div>
       </div>
-      <div className="actions center-row">
-        <button className="primary" onClick={empezar}>Empezar revisión</button>
-        <button onClick={() => setVista('lista')}>Ver lista completa</button>
-      </div>
+      {items.every(a => a.revisada) && <p className="note" style={{ textAlign: 'left' }}>Nada nuevo desde ayer. Última revisión 07:00.</p>}
+      <h3 className="sec">Nuevas desde ayer</h3>
+      <ul className="list two">
+        {items.filter(a => a.estado === 'presenta').slice(0, 2).map(a => (
+          <li key={a.id} className="thumbrow" onClick={() => { setTab('presenta'); setSelId(a.id); setVista('lista') }}>
+            <Landscape seed={a.id + 10} w={200} h={200} className="thumb" />
+            <div><Verdict kind={a.veredicto} /><strong>{a.titulo}</strong><small>{a.organismo} · {dias(a.plazo)} días</small></div>
+          </li>
+        ))}
+      </ul>
     </section>
   )
 
@@ -138,9 +153,10 @@ export default function Ayudas() {
         <ul className="list">
           {lista.length === 0 && <li className="empty">Nada en esta pestaña.</li>}
           {lista.map(a => (
-            <li key={a.id} className={a.id === selId ? 'sel' : ''} onClick={() => setSelId(a.id)}>
-              <Verdict kind={a.veredicto} /><strong>{a.titulo}</strong>
-              <small>{a.organismo} · quedan {dias(a.plazo)} días · {a.importe}</small>
+            <li key={a.id} className={`thumbrow ${a.id === selId ? 'sel' : ''}`} onClick={() => setSelId(a.id)}>
+              <Landscape seed={a.id + 10} w={200} h={200} className="thumb" />
+              <div><strong>{a.titulo}</strong><small>{a.organismo} · {a.importe}</small></div>
+              <span className="chip2">{dias(a.plazo)} d</span>
             </li>
           ))}
         </ul>

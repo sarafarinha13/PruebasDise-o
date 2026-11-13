@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { cargar, guardar } from '../data/store.js'
+import Landscape from './Landscape.jsx'
+import Leaf from './Leaf.jsx'
 
 const VACIO = { empresa: '', contacto: '', email: '', mensaje: '', ok: false }
 
@@ -23,17 +25,23 @@ export default function PaginaPublica() {
 
   return (
     <div className="app">
-      <header><strong className="logo">🌱 Reforesta</strong><span className="note" style={{ flex: 1 }}>Proyectos de reforestación · Comunidad de Madrid</span></header>
+      <header><span className="logo"><Leaf /><b>REFORESTA</b></span><span className="note" style={{ flex: 1 }}>Proyectos de reforestación · Comunidad de Madrid</span></header>
       <main>
         {!sel && (
           <section className="center">
-            <span className="pill">Para empresas</span>
-            <h1>Planta con nosotros</h1>
-            <p>Elige un proyecto y reserva sin compromiso. Te responderemos en unos días.</p>
+            <div className="hero pub">
+              <Landscape seed={7} className="hero-bg" />
+              <div className="hero-text" style={{ margin: 'auto', textAlign: 'center' }}>
+                <span className="tag">Para empresas</span>
+                <h1>Planta con nosotros</h1>
+                <p>Elige un proyecto y reserva sin compromiso. Te responderemos en unos días.</p>
+              </div>
+            </div>
             {publicas.length === 0 && <p>Pronto habrá proyectos.</p>}
             <div className="grid3">
               {publicas.map(p => (
                 <div key={p.id} className="card left">
+                  <Landscape seed={p.id + 40} w={400} h={200} className="cardimg" />
                   <strong>{p.titulo}</strong><small>{p.zona} · {p.incluye}</small>
                   <div className="badges"><span className="badge gray">{p.plazas > 0 ? `${p.plazas} plazas libres` : 'Sin plazas'}</span><span className="badge example">A presupuestar</span></div>
                   {p.plazas > 0 ? <button className="primary" onClick={() => setSel(p)}>Reservar sin compromiso</button> : <button onClick={() => alert('Te avisaremos cuando haya plazas.')}>Avisarme</button>}
