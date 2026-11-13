@@ -1,3 +1,17 @@
-body { font-family: system-ui, sans-serif; display: grid; place-items: center; min-height: 100vh; margin: 0; background: #fafafa; color: #222; }
-main { text-align: center; }
-button { font-size: 1rem; padding: .5rem 1rem; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; }
+:root { --green:#2e8b57; --blue:#2563eb; --bg:#fff; --line:#e5e7eb; --text:#1f2937; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); }
+header { display:flex; align-items:center; gap:1.5rem; padding:.75rem 1.5rem; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+.logo { color:var(--green); }
+nav { display:flex; gap:.5rem; flex:1; }
+button { font:inherit; padding:.5rem 1rem; border-radius:999px; border:1px solid transparent; background:none; cursor:pointer; }
+button.active { background:var(--blue); color:#fff; }
+main { max-width:960px; margin:2rem auto; padding:0 1.5rem; }
+.card { border:1px solid var(--line); border-radius:16px; padding:1.5rem; }
+.legend { display:flex; gap:.5rem; flex-wrap:wrap; margin-top:1.5rem; }
+.badge { display:inline-block; padding:.15rem .6rem; border-radius:999px; font-size:.8rem; font-weight:600; }
+.badge.green { background:#dcfce7; color:#166534; }
+.badge.amber { background:#fef3c7; color:#92400e; }
+.badge.red { background:#fee2e2; color:#991b1b; }
+.badge.gray { background:#e5e7eb; color:#4b5563; }
+.badge.example { background:#fff; color:#6b7280; border:1px dashed #9ca3af; font-weight:500; }
