@@ -84,22 +84,6 @@ export default function IslaApp() {
   )
 }
 
-function Meses({ items, actual }) {
-  const ini = HOY.getMonth() >= 10 ? new Date(HOY.getFullYear(), 10, 1) : new Date(HOY.getFullYear() - 1, 10, 1)
-  const meses = [...Array(12)].map((_, i) => new Date(ini.getFullYear(), ini.getMonth() + i, 1))
-  const vivas = items.filter(a => ['nueva', 'mira', 'preparando'].includes(a.estado))
-  return (
-    <div className="i-mo">
-      {meses.map((m, i) => {
-        const a = (actual && new Date(actual.plazo).getMonth() === m.getMonth() && new Date(actual.plazo).getFullYear() === m.getFullYear()) ? actual
-          : vivas.find(x => { const d = new Date(x.plazo); return d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear() })
-        const hoy = m.getMonth() === HOY.getMonth() && m.getFullYear() === HOY.getFullYear()
-        return <div key={i} className={`${i < 5 ? 's' : ''} ${hoy ? 'today' : ''}`} title={i < 5 ? 'Época de plantar' : ''}>{MESES[m.getMonth()]}{a && <b className={a === actual ? 'on' : ''}>{fecha(a.plazo)}</b>}</div>
-      })}
-    </div>
-  )
-}
-
 function Isla({ n, total, children }) {
   return (
     <div className="i-isle">
@@ -125,13 +109,18 @@ function Ayudas({ st, cola, actual, presentadas, top, upd, ir, setModal, conDesh
       {top(`Hoy, ${HOY.getDate()} de ${['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'][HOY.getMonth()]}`)}
       <div className="i-two">
         <div>
-          <h2>{actual ? <>{cola.length} {cola.length === 1 ? 'convocatoria' : 'convocatorias'} por revisar. <span>La primera cierra en {dias(actual.plazo)} días.</span></> : 'Todo revisado por hoy.'}</h2>
-          <Meses items={items} actual={actual} />
+          <div className="i-sum">
+            <div><b>{items.length}</b><span>leídas por el radar</span></div>
+            <div><b>{items.filter(a => a.veredicto !== 'descarta').length}</b><span>encajan con vosotros</span></div>
+            <div className="hot"><b>{cola.length}</b><span>por revisar hoy</span></div>
+            <div><b>{items.filter(a => a.estado === 'descartada' && a.por !== 'equipo').length}</b><span>descartadas por el radar</span></div>
+          </div>
+          <p className="i-now">{actual ? <>Revisando <b>1 de {cola.length}</b> · cierra en {dias(actual.plazo)} días</> : 'Todo revisado por hoy.'}</p>
           {actual ? (
             <div className="i-card" style={{ padding: '22px 26px' }}>
               <div className="i-head" style={{ alignItems: 'center' }}>
                 <span className={`i-v ${actual.veredicto === 'mira' ? 'mira' : ''}`}><i><Icon n={actual.veredicto === 'mira' ? 'eye' : 'check'} s={14} w={3} /></i>{actual.veredicto === 'mira' ? 'Mirad antes de decidir' : 'Sí, merece la pena presentarla'}</span>
-                <span className="i-tag">BDNS {actual.bdns} · quedan {cola.length}</span>
+                <span className="i-tag">BDNS {actual.bdns}</span>
               </div>
               <h3 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.025em', margin: '12px 0 2px', lineHeight: 1.15 }}>{actual.titulo}</h3>
               <div style={{ color: 'var(--mut)' }}>{actual.organismo}</div>
@@ -148,7 +137,6 @@ function Ayudas({ st, cola, actual, presentadas, top, upd, ir, setModal, conDesh
                 <button className="i-btn" onClick={() => { upd(actual.id, { estado: 'mira' }); conDeshacer('Guardada para más tarde', actual.id, { estado: 'nueva' }) }}><Icon n="later" s={19} />Más tarde</button>
                 <button className="i-btn p" onClick={() => { upd(actual.id, { estado: 'preparando' }); ir('presentar', actual.id) }}><Icon n="send" s={19} />Vamos a presentarla</button>
               </div>
-              <p style={{ fontSize: 13, color: 'var(--mut)', textAlign: 'center', marginTop: 10 }}>Atajos: ← no interesa · ↓ más tarde · → presentar</p>
             </div>
           ) : (
             <div className="i-card" style={{ padding: 34, textAlign: 'center' }}>

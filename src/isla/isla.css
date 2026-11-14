@@ -97,3 +97,9 @@
 .i-file .ok{color:var(--gr-d)}.i-file .duda{color:#8A5300}.i-file .no{color:var(--co-d)}
 .i-ck{align-items:flex-start!important}
 .i-ck .x{margin-top:2px}
+.i-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.i-sum div{background:#fff;border-radius:22px;padding:14px 18px;box-shadow:0 1px 0 var(--ln)}
+.i-sum b{display:block;font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1.05}
+.i-sum span{font-size:14.5px;color:var(--mut);font-weight:600}
+.i-sum .hot{background:var(--nv);color:#fff}.i-sum .hot span{color:#C9D2E3}
+.i-now{margin:18px 0 10px;font-size:16px;color:var(--mut)}.i-now b{color:var(--nv)}
