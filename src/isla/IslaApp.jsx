@@ -176,12 +176,57 @@ function Ayudas({ st, cola, actual, presentadas, top, upd, ir, setModal, conDesh
   )
 }
 
+// Verificación en el navegador: formato, integridad, tamaño y que parezca el documento pedido.
+const quitarTildes = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+const VACIAS = ['de', 'del', 'la', 'el', 'los', 'las', 'y', 'en', 'al', 'para', 'por']
+async function verificar(file, doc) {
+  const checks = [], ext = file.name.split('.').pop().toLowerCase()
+  const firmas = { pdf: '%PDF', png: '\x89PNG', jpg: '\xff\xd8', jpeg: '\xff\xd8', docx: 'PK' }
+  if (!firmas[ext]) return { estado: 'error', checks: [['no', 'Formato no admitido. Subid PDF, JPG, PNG o Word (.docx).']] }
+  checks.push(['ok', `Formato ${ext.toUpperCase()}`])
+  if (file.size < 1024) return { estado: 'error', checks: [...checks, ['no', 'El archivo está vacío o casi vacío.']] }
+  if (file.size > 10 * 1024 * 1024) return { estado: 'error', checks: [...checks, ['no', 'Pesa más de 10 MB: la mayoría de sedes no lo aceptan.']] }
+  checks.push(['ok', `Tamaño correcto (${file.size < 1048576 ? Math.round(file.size / 1024) + ' KB' : (file.size / 1048576).toFixed(1) + ' MB'})`])
+  const bytes = new Uint8Array(await file.slice(0, 300000).arrayBuffer())
+  const texto = Array.from(bytes, b => String.fromCharCode(b)).join('')
+  if (!texto.startsWith(firmas[ext])) return { estado: 'error', checks: [...checks, ['no', 'El archivo está dañado o no es lo que dice su extensión.']] }
+  checks.push(['ok', 'Se puede abrir'])
+  const claves = quitarTildes(doc).split(/\s+/).filter(w => w.length > 3 && !VACIAS.includes(w))
+  const donde = quitarTildes(file.name + ' ' + (ext === 'pdf' ? texto : ''))
+  const hallada = claves.find(k => donde.includes(k.slice(0, 6)))
+  if (hallada) { checks.push(['ok', `Parece «${doc}»`]); return { estado: 'ok', checks } }
+  checks.push(['duda', `No encontramos «${claves[0] || doc}» en el archivo. Comprobad que es el documento correcto.`])
+  return { estado: 'duda', checks }
+}
+
 function Presentar({ a, top, upd, ir, presentadas, setToast }) {
   if (!a) return <>{top('Ayudas · presentar')}<div className="i-card i-empty">Elegid una convocatoria desde Ayudas.</div></>
   const docs = a.docs || []
   const toggle = i => upd(a.id, { docs: docs.map((d, j) => (j === i ? [d[0], d[1], !d[2]] : d)) })
   const tiene = docs.map((d, i) => [d, i]).filter(([d]) => d[2]), falta = docs.map((d, i) => [d, i]).filter(([d]) => !d[2])
-  const Ck = ([d, i]) => <button key={i} className={`i-ck ${d[2] ? 'y' : 'f'}`} onClick={() => toggle(i)}><span className="x">{d[2] && <Icon n="check" s={15} w={3} />}</span><div>{d[0]}<small>{d[1]}</small></div></button>
+  const [revisando, setRevisando] = useState(null)
+  const subir = async (i, file) => {
+    if (!file) return
+    setRevisando(i)
+    const r = await verificar(file, docs[i][0])
+    setRevisando(null)
+    const archivo = { nombre: file.name, ...r }
+    upd(a.id, { docs: docs.map((d, j) => (j === i ? [d[0], d[1], r.estado !== 'error', archivo] : d)) })
+    setToast({ texto: r.estado === 'ok' ? `${docs[i][0]}: verificado` : r.estado === 'duda' ? `${docs[i][0]}: subido, revisadlo` : `${docs[i][0]}: no válido` })
+  }
+  const Ck = ([d, i]) => {
+    const f = d[3]
+    return (
+      <div key={i} className={`i-ck ${d[2] ? 'y' : 'f'}`}>
+        <button className="x" title="Marcar a mano" onClick={() => toggle(i)}>{d[2] && <Icon n="check" s={15} w={3} />}</button>
+        <div style={{ flex: 1, minWidth: 0 }}>{d[0]}<small>{d[1]}</small>
+          {revisando === i && <div className="i-file">Comprobando el archivo…</div>}
+          {f && revisando !== i && <div className={`i-file ${f.estado}`}><b><Icon n="doc" s={14} />{f.nombre}</b>{f.checks.map(([k, t]) => <span key={t} className={k}>{k === 'ok' ? '✓' : k === 'duda' ? '!' : '✕'} {t}</span>)}</div>}
+        </div>
+        <label className="i-up"><Icon n={f ? 'undo' : 'plus'} s={15} w={2.4} />{f ? 'Cambiar' : 'Subir'}<input type="file" accept=".pdf,.jpg,.jpeg,.png,.docx" hidden onChange={e => { subir(i, e.target.files[0]); e.target.value = '' }} /></label>
+      </div>
+    )
+  }
   return (
     <>
       {top('Ayudas · presentar')}
@@ -192,7 +237,7 @@ function Presentar({ a, top, upd, ir, presentadas, setToast }) {
         <div className="i-card" style={{ padding: '20px 22px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, alignContent: 'start' }}>
           <div><div className="i-k" style={{ marginBottom: 10 }}>Ya lo tenéis · {tiene.length}</div>{tiene.map(Ck)}</div>
           <div><div className="i-k" style={{ marginBottom: 10, color: 'var(--co-d)' }}>Os falta · {falta.length}</div>{falta.length ? falta.map(Ck) : <p style={{ color: 'var(--gr-d)', fontWeight: 600 }}>¡Lo tenéis todo!</p>}</div>
-          <div className="i-cita" style={{ gridColumn: '1/3' }}><b>Consejo del radar:</b> {a.consejo} <span style={{ color: 'var(--mut)' }}>Tocad un documento para marcarlo.</span></div>
+          <div className="i-cita" style={{ gridColumn: '1/3' }}><b>Consejo del radar:</b> {a.consejo} <span style={{ color: 'var(--mut)' }}>Subid cada documento y el radar comprobará que es válido. El archivo no sale de vuestro ordenador.</span></div>
         </div>
         <div className="i-side">
           <div className="i-card" style={{ padding: 22, textAlign: 'center', background: 'var(--co-l)' }}>
