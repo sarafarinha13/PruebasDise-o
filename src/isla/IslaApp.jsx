@@ -187,6 +187,20 @@ async function verificar(file, doc) {
   return { estado: 'duda', checks }
 }
 
+// Valida un CIF español: letra + 7 dígitos + control (dígito o letra según el tipo de entidad).
+const CIF_EJEMPLO = 'G12345674'
+function validarCif(v) {
+  const c = (v || '').toUpperCase().replace(/[\s.-]/g, '')
+  if (!/^[ABCDEFGHJNPQRSUVW]\d{7}[0-9A-J]$/.test(c)) return [false, 'Debe ser una letra, 7 números y un dígito o letra de control (ej. G12345674).']
+  const n = c.slice(1, 8).split('').map(Number)
+  let suma = n[1] + n[3] + n[5]
+  for (const i of [0, 2, 4, 6]) { const x = n[i] * 2; suma += Math.floor(x / 10) + (x % 10) }
+  const d = (10 - (suma % 10)) % 10, letra = 'JABCDEFGHI'[d], ctl = c[8]
+  const ok = 'NPQRSW'.includes(c[0]) ? ctl === letra : 'ABEH'.includes(c[0]) ? ctl === String(d) : ctl === String(d) || ctl === letra
+  if (!ok) return [false, `El dígito de control no cuadra: debería terminar en ${'NPQRSW'.includes(c[0]) ? letra : d}.`]
+  return [true, c[0] === 'G' ? 'CIF válido · asociación o fundación' : 'CIF válido']
+}
+
 function Presentar({ a, top, upd, ir, presentadas, setToast }) {
   if (!a) return <>{top('Ayudas · presentar')}<div className="i-card i-empty">Elegid una convocatoria desde Ayudas.</div></>
   const docs = a.docs || []
@@ -202,38 +216,57 @@ function Presentar({ a, top, upd, ir, presentadas, setToast }) {
     upd(a.id, { docs: docs.map((d, j) => (j === i ? [d[0], d[1], r.estado !== 'error', archivo] : d)) })
     setToast({ texto: r.estado === 'ok' ? `${docs[i][0]}: verificado` : r.estado === 'duda' ? `${docs[i][0]}: subido, revisadlo` : `${docs[i][0]}: no válido` })
   }
-  const Ck = ([d, i]) => {
-    const f = d[3]
+  const MESL = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+  const estadoDoc = d => (!d[2] ? 'falta' : d[3]?.estado === 'duda' ? 'revisar' : 'listo')
+  const orden = { falta: 0, revisar: 1, listo: 2 }
+  const lista = docs.map((d, i) => [d, i]).sort((x, y) => orden[estadoDoc(x[0])] - orden[estadoDoc(y[0])])
+  const [abierto, setAbierto] = useState(null)
+  const setDoc = (i, cambios) => upd(a.id, { docs: docs.map((d, j) => (j === i ? Object.assign([...d], cambios) : d)) })
+  const Doc = ([d, i]) => {
+    const f = d[3], e = revisando === i ? 'comprobando' : estadoDoc(d)
+    const avisos = f ? f.checks.filter(c => c[0] !== 'ok') : []
+    const etiqueta = { falta: 'Falta', revisar: 'Revisadlo', listo: 'Listo', comprobando: 'Comprobando…' }[e]
     return (
-      <div key={i} className={`i-ck ${d[2] ? 'y' : 'f'}`}>
-        <button className="x" title="Marcar a mano" onClick={() => toggle(i)}>{d[2] && <Icon n="check" s={15} w={3} />}</button>
-        <div style={{ flex: 1, minWidth: 0 }}>{d[0]}<small>{d[1]}</small>
-          {revisando === i && <div className="i-file">Comprobando el archivo…</div>}
-          {f && revisando !== i && <div className={`i-file ${f.estado}`}><b><Icon n="doc" s={14} />{f.nombre}</b>{f.checks.map(([k, t]) => <span key={t} className={k}>{k === 'ok' ? '✓' : k === 'duda' ? '!' : '✕'} {t}</span>)}</div>}
+      <div key={i} className={`i-doc ${e}`}>
+        <button className="ico" title="Marcar a mano" onClick={() => toggle(i)}>{e === 'listo' ? <Icon n="check" s={16} w={3} /> : e === 'revisar' ? '!' : null}</button>
+        <div className="txt">
+          <b>{d[0]}</b>
+          <small>{f ? <><Icon n="doc" s={13} /> {f.nombre}{e === 'listo' && ' · verificado'}</> : d[1]}{d[4]?.ok && ' · revisado por vosotros'}</small>
+          {e !== 'comprobando' && avisos.map(([k, t]) => <em key={t} className={k}>{t}</em>)}
         </div>
-        <label className="i-up"><Icon n={f ? 'undo' : 'plus'} s={15} w={2.4} />{f ? 'Cambiar' : 'Subir'}<input type="file" accept=".pdf,.jpg,.jpeg,.png,.docx" hidden onChange={e => { subir(i, e.target.files[0]); e.target.value = '' }} /></label>
+        <span className="st">{etiqueta}</span>
+        <div className="acts">{e !== 'falta' && e !== 'comprobando' && <button className={`i-up ${abierto === i ? 'on' : ''}`} onClick={() => setAbierto(abierto === i ? null : i)}><Icon n="eye" s={15} />Revisar</button>}
+        <label className={`i-up ${e === 'falta' ? 'p' : ''}`}><Icon n={f ? 'undo' : 'plus'} s={15} w={2.4} />{f ? 'Cambiar' : 'Subir'}<input type="file" accept=".pdf,.jpg,.jpeg,.png,.docx" hidden onChange={ev => { subir(i, ev.target.files[0]); ev.target.value = '' }} /></label></div>
+        {abierto === i && <Revision d={d} cerrar={() => setAbierto(null)} set={c => setDoc(i, c)} />}
       </div>
     )
   }
+  const n = falta.length
   return (
     <>
       {top('Ayudas · presentar')}
-      <button className="i-link" style={{ marginBottom: 8 }} onClick={() => ir('ayudas')}><Icon n="back" s={16} w={2.4} />Volver a la revisión</button>
-      <h2>¿Qué hace falta para presentarla?</h2>
-      <p className="i-sub">{a.titulo} · {a.organismo}</p>
+      <button className="i-link" style={{ marginBottom: 8, alignSelf: 'flex-start' }} onClick={() => ir('ayudas')}><Icon n="back" s={16} w={2.4} />Volver a la revisión</button>
       <div className="i-two">
-        <div className="i-card" style={{ padding: '20px 22px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, alignContent: 'start' }}>
-          <div><div className="i-k" style={{ marginBottom: 10 }}>Ya lo tenéis · {tiene.length}</div>{tiene.map(Ck)}</div>
-          <div><div className="i-k" style={{ marginBottom: 10, color: 'var(--co-d)' }}>Os falta · {falta.length}</div>{falta.length ? falta.map(Ck) : <p style={{ color: 'var(--gr-d)', fontWeight: 600 }}>¡Lo tenéis todo!</p>}</div>
-          <div className="i-cita" style={{ gridColumn: '1/3' }}><b>Consejo del radar:</b> {a.consejo} <span style={{ color: 'var(--mut)' }}>Subid cada documento y el radar comprobará que es válido. El archivo no sale de vuestro ordenador.</span></div>
+        <div>
+          <h2>¿Qué hace falta para presentarla?</h2>
+          <p className="i-sub">{a.titulo} · {a.organismo.split(' · ')[0]}</p>
+          <div className="i-card i-docs">
+            <div className="i-docs-h"><b>Tenéis {tiene.length} de {docs.length} documentos</b><span>{n ? `Os ${n === 1 ? 'falta 1' : `faltan ${n}`}. Subidlos y el radar comprobará que son válidos.` : '¡Lo tenéis todo! Ya podéis presentarla.'}</span></div>
+            {lista.map(Doc)}
+            <p className="i-priv"><Icon n="info" s={14} />Los archivos se comprueban en vuestro ordenador y no se envían a ningún sitio.</p>
+          </div>
+          {a.consejo && <div className="i-tip"><span className="ic"><Icon n="info" s={20} w={2.2} /></span><div><b>Consejo del radar</b>{a.consejo}</div></div>}
         </div>
         <div className="i-side">
-          <div className="i-card" style={{ padding: 22, textAlign: 'center', background: 'var(--co-l)' }}>
-            <div style={{ fontSize: 54, fontWeight: 700, letterSpacing: '-.04em', color: 'var(--co-d)', lineHeight: 1 }}>{dias(a.plazo)} días</div>
-            <p style={{ color: '#8A4A35', margin: '6px 0 16px' }}>para el {new Date(a.plazo).getDate()} de {['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'][new Date(a.plazo).getMonth()]}</p>
-            <button className="i-btn n" style={{ width: '100%' }} onClick={() => { upd(a.id, { estado: 'presentada', paso: 1, pasos: ['Presentada', 'Estudiando', 'Resolución', 'Justificar'], fecha: 'presentada hoy', mensaje: 'La están estudiando. No tenéis que hacer nada.' }); setToast({ texto: `¡Presentada! Habéis plantado el árbol n.º ${presentadas + 1}` }); ir('seguimiento') }}><Icon n="check" s={19} w={2.6} />Ya la hemos presentado</button>
+          <div className="i-card i-dl">
+            <span className="i-k">Plazo</span>
+            <div className="big">{dias(a.plazo)} días</div>
+            <p>hasta el {new Date(a.plazo).getDate()} de {MESL[new Date(a.plazo).getMonth()]}</p>
+            <Svg html={island(300, 200, presentadas + 1, 10)} style={{ display: 'block', margin: '6px 0 0' }} />
+            <p className="tree">Al presentarla plantáis el árbol n.º {presentadas + 1}</p>
+            <button className="i-btn p" style={{ width: '100%' }} onClick={() => { upd(a.id, { estado: 'presentada', paso: 1, pasos: ['Presentada', 'Estudiando', 'Resolución', 'Justificar'], fecha: 'presentada hoy', mensaje: 'La están estudiando. No tenéis que hacer nada.' }); setToast({ texto: `¡Presentada! Habéis plantado el árbol n.º ${presentadas + 1}` }); ir('seguimiento') }}><Icon n="check" s={19} w={2.6} />Ya la hemos presentado</button>
+            {n > 0 && <small className="warn">Aún os {n === 1 ? 'falta 1 documento' : `faltan ${n} documentos`}</small>}
           </div>
-          <div className="i-isle" style={{ textAlign: 'center' }}><p style={{ margin: '0 0 -6px', fontWeight: 600 }}>Al presentarla plantáis el árbol n.º {presentadas + 1}</p><Svg html={island(310, 230, presentadas + 1, 10)} /></div>
         </div>
       </div>
     </>
@@ -343,7 +376,7 @@ function Perfil({ st, setSt, top, presentadas }) {
       <div className="i-two">
         <div className="i-card" style={{ padding: '22px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 18px', alignContent: 'start' }}>
           <div className="i-field"><span>Nombre</span><b>Asociación Reforesta</b></div>
-          <div className="i-field"><span>CIF</span><b>G-00000000 (ejemplo)</b></div>
+          <div className="i-field"><span>CIF</span><b>{CIF_EJEMPLO} (ejemplo)</b></div>
           <div className="i-field"><span>Tipo de entidad</span><b>Sin ánimo de lucro · utilidad pública</b></div>
           <div className="i-field"><span>Equipo</span><b>7 personas</b></div>
           <div className="i-field" style={{ gridColumn: '1/3' }}><span>¿Dónde trabajáis?</span><div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>{zonas.map((z, i) => <span key={z} className="i-tag" style={i ? { background: '#fff' } : { background: 'var(--nv)', color: '#fff' }}>{z}</span>)}<button className="i-tag" style={{ background: '#fff', border: '1.5px dashed #BFC6BC' }} onClick={() => { const z = prompt('Nueva zona'); if (z) setZonas([...zonas, z]) }}>+ Añadir</button></div></div>
@@ -365,5 +398,33 @@ function Perfil({ st, setSt, top, presentadas }) {
         </div>
       </div>
     </>
+  )
+}
+
+function Revision({ d, cerrar, set }) {
+  const esCif = /cif/i.test(d[0]), f = d[3]
+  const [cif, setCif] = useState(d[4]?.valor || CIF_EJEMPLO)
+  const [ok, msg] = validarCif(cif)
+  const confirmar = () => { set({ 2: true, 4: { ok: true, valor: esCif ? cif.toUpperCase() : undefined } }); cerrar() }
+  return (
+    <div className="i-rev">
+      {esCif ? (<>
+        <label className="lab">CIF de la entidad</label>
+        <input className={`i-in ${ok ? 'ok' : 'no'}`} value={cif} onChange={e => setCif(e.target.value)} spellCheck="false" />
+        <p className={ok ? 'okm' : 'nom'}>{ok ? '✓ ' : '✕ '}{msg}</p>
+        <p className="mut">Sale de vuestro perfil. Si lo cambiáis aquí, se usará en esta solicitud.</p>
+      </>) : f ? (<>
+        <p className="lab">Comprobaciones de «{f.nombre}»</p>
+        {f.checks.map(([k, t]) => <p key={t} className={k === 'ok' ? 'okm' : k === 'duda' ? 'dum' : 'nom'}>{k === 'ok' ? '✓' : k === 'duda' ? '!' : '✕'} {t}</p>)}
+        <p className="mut">El radar comprueba formato, tamaño y que parezca el documento. Revisad vosotros fechas y firmas.</p>
+      </>) : (<>
+        <p className="lab">{d[1]}</p>
+        <p className="mut">Lo tenéis guardado en vuestro perfil. Comprobad que sigue vigente antes de presentarlo.</p>
+      </>)}
+      <div className="row">
+        <button className="i-btn sm p" disabled={esCif && !ok} style={esCif && !ok ? { opacity: .45, cursor: 'not-allowed' } : null} onClick={confirmar}><Icon n="check" s={16} w={2.6} />Es correcto</button>
+        <button className="i-btn sm" onClick={() => { set({ 2: false, 3: undefined, 4: undefined }); cerrar() }}><Icon n="x" s={16} w={2.4} />No lo tenemos</button>
+      </div>
+    </div>
   )
 }
